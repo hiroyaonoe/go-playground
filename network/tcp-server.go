@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -17,6 +20,12 @@ func main() {
 	conn, err := list.Accept()
 	defer conn.Close()
 
+	err = readHeader(conn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Header BOPP TEST Accepted")
+
 	_, err = io.Copy(os.Stdout, conn)
 	if err != nil {
 		if err == io.EOF {
@@ -24,4 +33,20 @@ func main() {
 		}
 		log.Fatalf(err.Error())
 	}
+}
+
+func readHeader(r io.Reader) error {
+	header := []byte("BOPP TEST")
+	b := make([]byte, len(header))
+
+	_, err := r.Read(b)
+	if err != nil {
+		return err
+	}
+
+	if bytes.Equal(b, header) {
+		return nil
+	}
+
+	return errors.New("Invalid Header")
 }
