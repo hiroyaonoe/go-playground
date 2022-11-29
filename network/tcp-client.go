@@ -19,7 +19,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	_, err = io.WriteString(conn, "BOPP TEST")
+	_, err = io.WriteString(conn, "BCoP TEST\r\n")
 	if err != nil {
 		log.Fatal(err)
 	}

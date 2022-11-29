@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -57,8 +60,13 @@ func (l *MyListener) Accept() (net.Conn, error) {
 	l.count += 1
 	l.mu.Unlock()
 
-	fmt.Printf("Accept\n")
-
+	/*
+		err = readHeader(conn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("Accept Header\n")
+	*/
 	return &TeeConn{conn}, nil
 }
 
@@ -82,4 +90,20 @@ func (c *TeeConn) Read(b []byte) (n int, err error) {
 	n, err = c.Conn.Read(b)
 	fmt.Printf(string(b))
 	return
+}
+
+func readHeader(r io.Reader) error {
+	header := []byte("BCoP TEST\r\n")
+	b := make([]byte, len(header))
+
+	_, err := r.Read(b)
+	if err != nil {
+		return err
+	}
+
+	if bytes.Equal(b, header) {
+		return nil
+	}
+
+	return errors.New("Invalid Header")
 }
